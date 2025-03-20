@@ -86,10 +86,10 @@ def home():
         disease = predictDisease(selected_symptoms)
         
         # Enviar la predicción y los síntomas seleccionados a la plantilla
-        return render_template("index.html", disease=disease, symptoms=selected_symptoms)
+        return render_template("templates/index.html", disease=disease, symptoms=selected_symptoms)
 
     symptoms = list(X.columns)  # Todos los síntomas disponibles en el dataset
-    return render_template("index.html", symptoms=symptoms)
+    return render_template("templates/index.html", symptoms=symptoms)
 
 # Ruta para buscar síntomas
 @app.route("/search", methods=["GET"])
