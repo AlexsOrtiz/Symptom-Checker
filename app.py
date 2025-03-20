@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import statistics
+import sqlite3
 from flask import Flask, render_template, request, jsonify
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
@@ -11,9 +12,17 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 
 app = Flask(__name__)
 
-# Cargar el dataset de entrenamiento
-DATA_PATH = "Training.csv"
-data = pd.read_csv(DATA_PATH).dropna(axis=1)
+# Función para cargar los datos desde la base de datos SQLite
+def load_data_from_sqlite():
+    # Conectar a la base de datos SQLite
+    conn = sqlite3.connect('training_data.db')
+    query = "SELECT * FROM training_table"
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df
+
+# Cargar los datos desde la base de datos SQLite
+data = load_data_from_sqlite().dropna(axis=1)
 
 # Preprocesamiento del dataset
 encoder = LabelEncoder()
@@ -42,7 +51,7 @@ for index, value in enumerate(symptoms):
 # Crear un diccionario con los índices y las clases predichas
 data_dict = {
     "symptom_index": symptom_index,
-    "predictions_classes": encoder.classes_ ,
+    "predictions_classes": encoder.classes_,
     "symptoms": list(symptom_index.keys())  # Lista de síntomas para la búsqueda
 }
 
@@ -86,10 +95,10 @@ def home():
         disease = predictDisease(selected_symptoms)
         
         # Enviar la predicción y los síntomas seleccionados a la plantilla
-        return render_template("templates/index.html", disease=disease, symptoms=selected_symptoms)
+        return render_template("index.html", disease=disease, symptoms=selected_symptoms)
 
     symptoms = list(X.columns)  # Todos los síntomas disponibles en el dataset
-    return render_template("templates/index.html", symptoms=symptoms)
+    return render_template("index.html", symptoms=symptoms)
 
 # Ruta para buscar síntomas
 @app.route("/search", methods=["GET"])
@@ -106,5 +115,3 @@ def search():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
