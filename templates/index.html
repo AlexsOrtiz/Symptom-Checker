@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script> <!-- Vinculamos el archivo JS -->
+</head>
+<body>
+    <div class="container">
+        <h1>Select Symptoms</h1>
+        <form method="POST">
+            <div>
+                <!-- Barra de búsqueda de síntomas -->
+                <input type="text" id="symptom_search" placeholder="Search Symptoms">
+                <select id="symptom_dropdown" name="symptoms" multiple>
+                    <!-- Opciones de síntomas se llenarán aquí -->
+                </select>
+            </div>
+
+            <!-- Aquí van los síntomas seleccionados -->
+            <div>
+                <h3>Selected Symptoms:</h3>
+                <ul id="selected_symptoms_list">
+                    <!-- Los síntomas seleccionados aparecerán aquí -->
+                </ul>
+            </div>
+
+            <button type="submit">Check Disease</button>
+        </form>
+
+        {% if disease %}
+            <h2>Predicted Disease: {{ disease['final_prediction'] }}</h2>
+        {% endif %}
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="https://www.canva.com/design/DAGiL5shOM4/JrNJue7PZK8X2B2ZfsKf_Q/view?utm_content=DAGiL5shOM4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h6bc129e773" target="_blank">
+            <button style="padding: 10px 20px; font-size: 16px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                How does this app work?
+            </button>
+        </a>
+    </div>
+</body>
+</html>
