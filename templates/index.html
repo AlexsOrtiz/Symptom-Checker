@@ -3,45 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symptom Checker</title>
+    <title>Medical Symptom Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script> <!-- Vinculamos el archivo JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Select Symptoms</h1>
-        <form method="POST">
-            <div>
-                <!-- Barra de búsqueda de síntomas -->
-                <input type="text" id="symptom_search" placeholder="Search Symptoms">
+        <header>
+            <h1><i class="fas fa-stethoscope"></i> Medical Symptom Analyzer</h1>
+            <p class="subtitle">Enter your symptoms to get a preliminary diagnosis</p>
+        </header>
+
+        <div class="medical-info">
+            <h3><i class="fas fa-info-circle"></i> Important Information</h3>
+            <p>This tool is designed to provide preliminary information only. Always consult with a healthcare professional for accurate diagnosis and treatment.</p>
+        </div>
+
+        <form method="POST" class="symptom-form">
+            <div class="form-group">
+                <label for="symptom_search"><i class="fas fa-search"></i> Search Symptoms</label>
+                <input type="text" id="symptom_search" placeholder="Type to search symptoms...">
+            </div>
+
+            <div class="form-group">
+                <label for="symptom_dropdown"><i class="fas fa-list"></i> Available Symptoms</label>
                 <select id="symptom_dropdown" name="symptoms" multiple>
-                    <!-- Opciones de síntomas se llenarán aquí -->
+                    <!-- Options will be populated here -->
                 </select>
             </div>
 
-            <!-- Aquí van los síntomas seleccionados -->
-            <div>
-                <h3>Selected Symptoms:</h3>
+            <div class="selected-symptoms-section">
+                <h3><i class="fas fa-check-circle"></i> Selected Symptoms <span class="symptom-counter">0/10</span></h3>
                 <ul id="selected_symptoms_list">
-                    <!-- Los síntomas seleccionados aparecerán aquí -->
+                    <!-- Selected symptoms will appear here -->
                 </ul>
             </div>
 
-            <button type="submit">Check Disease</button>
+            <button type="submit" class="analyze-btn">
+                <i class="fas fa-microscope"></i> Analyze Symptoms
+            </button>
         </form>
 
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Analyzing symptoms...</p>
+        </div>
+
         {% if disease %}
-            <h2>Predicted Disease: {{ disease['final_prediction'] }}</h2>
+            <div class="result-section fade-in">
+                <h2><i class="fas fa-clipboard-check"></i> Analysis Results</h2>
+                <div class="result-card">
+                    <h3>Predicted Condition</h3>
+                    <p class="disease-name">{{ disease['final_prediction'] }}</p>
+                    
+                    <div class="model-predictions">
+                        <h4>Model Predictions</h4>
+                        <ul>
+                            <li><strong>Random Forest:</strong> {{ disease['rf_model_prediction'] }}</li>
+                            <li><strong>Naive Bayes:</strong> {{ disease['naive_bayes_prediction'] }}</li>
+                            <li><strong>SVM:</strong> {{ disease['svm_model_prediction'] }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         {% endif %}
     </div>
 
-    <div style="text-align: center; margin-top: 20px;">
-        <a href="https://www.canva.com/design/DAGiL5shOM4/JrNJue7PZK8X2B2ZfsKf_Q/view?utm_content=DAGiL5shOM4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h6bc129e773" target="_blank">
-            <button style="padding: 10px 20px; font-size: 16px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                How does this app work?
-            </button>
-        </a>
-    </div>
+    <footer>
+        <div class="footer-content">
+            <p>This is a preliminary diagnostic tool. Always consult with healthcare professionals.</p>
+            <a href="https://www.canva.com/design/DAGiL5shOM4/JrNJue7PZK8X2B2ZfsKf_Q/view?utm_content=DAGiL5shOM4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h6bc129e773" target="_blank" class="info-btn">
+                <i class="fas fa-book-medical"></i> Learn More About This Tool
+            </a>
+        </div>
+    </footer>
 </body>
 </html>
