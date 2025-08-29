@@ -1,420 +1,581 @@
-class QuoteGuessingGame {
+/**
+ * MedInsight - Medical Symptom Analyzer
+ * Enhanced JavaScript with modern UX features
+ */
+
+class MedInsight {
     constructor() {
-        this.currentQuote = null;
-        this.remainingGuesses = 4;
-        this.gameActive = false;
-        this.hintsShown = [];
+        this.selectedSymptoms = new Set();
+        this.maxSymptoms = 10;
+        this.allSymptoms = [];
+        this.isLoading = false;
         
-        this.initializeElements();
+        this.init();
+    }
+
+    init() {
         this.bindEvents();
+        this.initializeTooltips();
+        this.loadInitialSymptoms();
+        this.setupFormValidation();
+        this.initializeAnimations();
     }
-    
-    initializeElements() {
-        // Botones de control
-        this.loadQuotesBtn = document.getElementById('loadQuotesBtn');
-        this.newGameBtn = document.getElementById('newGameBtn');
-        this.playAgainBtn = document.getElementById('playAgainBtn');
-        
-        // Elementos de estado
-        this.statusText = document.getElementById('statusText');
-        this.loadingSpinner = document.getElementById('loadingSpinner');
-        
-        // Área del juego
-        this.gameArea = document.getElementById('gameArea');
-        this.quoteText = document.getElementById('quoteText');
-        this.guessesCount = document.getElementById('guessesCount');
-        this.guessInput = document.getElementById('guessInput');
-        this.submitGuessBtn = document.getElementById('submitGuess');
-        
-        // Pistas
-        this.hintsContainer = document.getElementById('hintsContainer');
-        this.hintsList = document.getElementById('hintsList');
-        
-        // Resultados
-        this.resultContainer = document.getElementById('resultContainer');
-        this.resultText = document.getElementById('resultText');
-        this.authorInfo = document.getElementById('authorInfo');
-        this.authorName = document.getElementById('authorName');
-        this.authorImage = document.getElementById('authorImage');
-        this.imagePlaceholder = document.getElementById('imagePlaceholder');
-        
-        // Modal
-        this.modal = document.getElementById('messageModal');
-        this.modalTitle = document.getElementById('modalTitle');
-        this.modalMessage = document.getElementById('modalMessage');
-        this.closeModal = document.querySelector('.close');
-    }
-    
+
     bindEvents() {
-        // Eventos de botones
-        this.loadQuotesBtn.addEventListener('click', () => this.loadQuotes());
-        this.newGameBtn.addEventListener('click', () => this.startNewGame());
-        this.playAgainBtn.addEventListener('click', () => this.startNewGame());
-        this.submitGuessBtn.addEventListener('click', () => this.submitGuess());
+        // Search input with debounce
+        $('#symptom_search').on('input', this.debounce(this.handleSymptomSearch.bind(this), 300));
         
-        // Evento de Enter en el input
-        this.guessInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && this.gameActive) {
-                this.submitGuess();
-            }
+        // Symptom selection - use double-click instead of change
+        $('#symptom_dropdown').on('dblclick', this.handleSymptomSelection.bind(this));
+        
+        // Form submission
+        $('.analysis-form').on('submit', this.handleFormSubmit.bind(this));
+        
+        // Keyboard navigation
+        $('#symptom_search').on('keydown', this.handleSearchKeydown.bind(this));
+        
+        // Empty state click to focus search
+        $(document).on('click', '#empty_symptoms', () => {
+            $('#symptom_search').focus();
         });
         
-        // Eventos del modal
-        this.closeModal.addEventListener('click', () => this.hideModal());
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                this.hideModal();
-            }
-        });
+        // Remove button delegation
+        $(document).on('click', '.remove-btn', this.handleSymptomRemoval.bind(this));
         
-        // Evento para prevenir el submit del formulario
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target === this.guessInput) {
+        // Navigation button interactions
+        $('.nav-btn').on('click', this.handleNavButtonClick.bind(this));
+        
+        // Prevent form submission on Enter in search
+        $('#symptom_search').on('keypress', (e) => {
+            if (e.which === 13) {
                 e.preventDefault();
+                this.selectFirstSymptom();
             }
         });
+
+        // Add double-click functionality for dropdown options
+        $(document).on('dblclick', '#symptom_dropdown option', this.handleOptionClick.bind(this));
     }
-    
-    showLoading(show = true) {
-        if (show) {
-            this.loadingSpinner.classList.add('show');
-        } else {
-            this.loadingSpinner.classList.remove('show');
-        }
-    }
-    
-    updateStatus(message) {
-        this.statusText.textContent = message;
-    }
-    
-    showModal(title, message) {
-        this.modalTitle.textContent = title;
-        this.modalMessage.textContent = message;
-        this.modal.style.display = 'block';
-    }
-    
-    hideModal() {
-        this.modal.style.display = 'none';
-    }
-    
-    async loadQuotes() {
-        try {
-            this.loadQuotesBtn.disabled = true;
-            this.showLoading(true);
-            this.updateStatus('Loading quotes...');
+
+    initializeTooltips() {
+        // Enhanced tooltips with better positioning
+        $('[data-tooltip]').each(function() {
+            const $element = $(this);
+            const tooltip = $element.data('tooltip');
             
-            const response = await fetch('/api/load-quotes');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.updateStatus(data.message);
-                this.newGameBtn.disabled = false;
-                this.showModal('Success!', `${data.count} quotes loaded successfully! You can now start playing!`);
-            } else {
-                throw new Error(data.error || 'Unknown error');
-            }
-        } catch (error) {
-            this.updateStatus('Error loading quotes');
-            this.showModal('Error', `Could not load quotes: ${error.message}`);
-            this.loadQuotesBtn.disabled = false;
-        } finally {
-            this.showLoading(false);
-        }
-    }
-    
-    async startNewGame() {
-        try {
-            this.showLoading(true);
-            this.updateStatus('Iniciando nuevo juego...');
-            
-            const response = await fetch('/api/new-game');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.currentQuote = data.quote;
-                this.remainingGuesses = 4;
-                this.gameActive = true;
-                this.hintsShown = [];
+            $element.on('mouseenter', function() {
+                const $tooltip = $('<div class="custom-tooltip">')
+                    .text(tooltip)
+                    .appendTo('body');
                 
-                this.setupGameUI();
-                this.updateStatus('New game started! Guess who wrote this quote.');
-            } else {
-                throw new Error(data.error || 'Unknown error');
-            }
+                const rect = this.getBoundingClientRect();
+                const tooltipRect = $tooltip[0].getBoundingClientRect();
+                
+                $tooltip.css({
+                    top: rect.top - tooltipRect.height - 8,
+                    left: rect.left + (rect.width - tooltipRect.width) / 2
+                });
+                
+                $tooltip.addClass('show');
+            });
+            
+            $element.on('mouseleave', function() {
+                $('.custom-tooltip').remove();
+            });
+        });
+    }
+
+    async loadInitialSymptoms() {
+        try {
+            const response = await $.get('/search?query=');
+            this.allSymptoms = response || [];
+            console.log('Loaded symptoms:', this.allSymptoms.length);
+            this.populateSymptomDropdown(this.allSymptoms);
         } catch (error) {
-            this.updateStatus('Error starting game');
-            this.showModal('Error', `Could not start game: ${error.message}`);
+            console.error('Failed to load symptoms:', error);
+            this.showNotification('Failed to load symptoms', 'error');
+        }
+    }
+
+    async handleSymptomSearch(event) {
+        const query = $(event.target).val().trim();
+        
+        if (query.length === 0) {
+            this.populateSymptomDropdown(this.allSymptoms);
+            return;
+        }
+
+        try {
+            this.showSearchLoading(true);
+            const response = await $.get(`/search?query=${encodeURIComponent(query)}`);
+            const filteredSymptoms = response || [];
+            
+            this.populateSymptomDropdown(filteredSymptoms);
+            this.highlightSearchResults(query);
+        } catch (error) {
+            console.error('Search failed:', error);
+            this.showNotification('Search failed. Please try again.', 'error');
         } finally {
-            this.showLoading(false);
+            this.showSearchLoading(false);
         }
     }
-    
-    setupGameUI() {
-        // Mostrar área del juego
-        this.gameArea.style.display = 'block';
-        this.gameArea.classList.add('fade-in');
+
+    populateSymptomDropdown(symptoms) {
+        const $dropdown = $('#symptom_dropdown');
+        $dropdown.empty();
         
-        // Ocultar resultados
-        this.resultContainer.style.display = 'none';
-        
-        // Configurar texto de la cita
-        this.quoteText.textContent = this.currentQuote.text;
-        
-        // Resetear input
-        this.guessInput.value = '';
-        this.guessInput.disabled = false;
-        this.submitGuessBtn.disabled = false;
-        
-        // Resetear pistas
-        this.hintsList.innerHTML = '';
-        
-        // Actualizar contador de intentos
-        this.updateGuessesDisplay();
-        
-        // Focus en el input
-        setTimeout(() => {
-            this.guessInput.focus();
-        }, 100);
-    }
-    
-    updateGuessesDisplay() {
-        this.guessesCount.textContent = this.remainingGuesses;
-        
-        const guessesElement = document.querySelector('.guesses-remaining');
-        guessesElement.classList.remove('warning', 'danger');
-        
-        if (this.remainingGuesses <= 1) {
-            guessesElement.classList.add('danger');
-        } else if (this.remainingGuesses <= 2) {
-            guessesElement.classList.add('warning');
-        }
-    }
-    
-    async submitGuess() {
-        if (!this.gameActive) return;
-        
-        const userGuess = this.guessInput.value.trim();
-        if (!userGuess) {
-            this.showModal('Warning', 'Please enter your guess before submitting.');
+        if (symptoms.length === 0) {
+            $dropdown.append('<option disabled>No symptoms found</option>');
             return;
         }
         
-        try {
-            this.submitGuessBtn.disabled = true;
-            this.showLoading(true);
-            
-            const response = await fetch('/api/check-answer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    answer: userGuess,
-                    author: this.currentQuote.author
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.correct) {
-                    this.winGame();
-                } else {
-                    this.remainingGuesses--;
-                    this.updateGuessesDisplay();
-                    
-                    if (this.remainingGuesses > 0) {
-                        await this.showHint();
-                        this.guessInput.value = '';
-                        this.guessInput.focus();
-                    } else {
-                        this.loseGame();
-                    }
-                }
-            } else {
-                throw new Error(data.error || 'Unknown error');
+        symptoms.forEach(symptom => {
+            if (!this.selectedSymptoms.has(symptom)) {
+                const $option = $('<option>')
+                    .val(symptom)
+                    .text(symptom)
+                    .data('symptom', symptom);
+                
+                $dropdown.append($option);
             }
-        } catch (error) {
-            this.showModal('Error', `Error al verificar la respuesta: ${error.message}`);
-        } finally {
-            this.showLoading(false);
-            this.submitGuessBtn.disabled = false;
-        }
+        });
+        
+        // Add visual feedback for available options
+        this.updateDropdownState();
     }
-    
-    async showHint() {
-        let hintType;
+
+    highlightSearchResults(query) {
+        if (!query) return;
         
-        if (this.remainingGuesses === 3) {
-            hintType = 'birth';
-        } else if (this.remainingGuesses === 2) {
-            hintType = 'first_name';
-        } else if (this.remainingGuesses === 1) {
-            hintType = 'last_name';
-        }
-        
-        if (!hintType || this.hintsShown.includes(hintType)) return;
-        
-        try {
-            const params = new URLSearchParams({
-                type: hintType,
-                author: this.currentQuote.author,
-                bio_link: this.currentQuote.bio_link
-            });
+        $('#symptom_dropdown option').each(function() {
+            const $option = $(this);
+            const text = $option.text();
+            const regex = new RegExp(`(${query})`, 'gi');
+            const highlighted = text.replace(regex, '<mark>$1</mark>');
             
-            const response = await fetch(`/api/get-hint?${params}`);
-            const data = await response.json();
-            
-            if (data.success) {
-                this.addHintToUI(data.hint);
-                this.hintsShown.push(hintType);
+            // Note: HTML in option elements is limited, this is more for future enhancement
+            $option.attr('title', `Contains: ${query}`);
+        });
+    }
+
+    handleSymptomSelection(event) {
+        const $select = $(event.target);
+        const $selectedOption = $select.find('option:selected').first();
+        
+        if ($selectedOption.length > 0) {
+            const symptom = $selectedOption.val();
+            if (symptom) {
+                this.addSymptom(symptom);
+                $selectedOption.prop('selected', false); // Deselect after adding
             }
-        } catch (error) {
-            console.error('Error al obtener pista:', error);
         }
     }
-    
-    addHintToUI(hint) {
-        const hintElement = document.createElement('div');
-        hintElement.className = 'hint-item';
-        hintElement.textContent = hint;
-        
-        this.hintsList.appendChild(hintElement);
-        
-        // Scroll hacia la pista
-        hintElement.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    winGame() {
-        this.gameActive = false;
-        this.guessInput.disabled = true;
-        this.submitGuessBtn.disabled = true;
-        
-        this.showResult(true, 'Congratulations! 🎉', 'You guessed correctly!');
-        this.loadAuthorImage();
-    }
-    
-    loseGame() {
-        this.gameActive = false;
-        this.guessInput.disabled = true;
-        this.submitGuessBtn.disabled = true;
-        
-        this.showResult(false, 'Game Over 😔', `The correct answer was: ${this.currentQuote.author}`);
-        this.loadAuthorImage();
-    }
-    
-    showResult(isWin, title, message) {
-        // Ocultar área del juego
-        this.gameArea.style.display = 'none';
-        
-        // Mostrar resultados
-        this.resultContainer.style.display = 'block';
-        this.resultContainer.classList.add('fade-in');
-        
-        // Configurar texto del resultado
-        this.resultText.textContent = message;
-        this.resultText.classList.remove('success', 'failure');
-        this.resultText.classList.add(isWin ? 'success' : 'failure');
-        
-        // Mostrar nombre del autor
-        this.authorName.textContent = this.currentQuote.author;
-        
-        // Resetear imagen
-        this.authorImage.style.display = 'none';
-        this.imagePlaceholder.style.display = 'flex';
-        this.imagePlaceholder.innerHTML = '<i class="fas fa-user-circle"></i><p>Cargando imagen...</p>';
-        
-        // Scroll hacia arriba
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        this.updateStatus(`Game finished. Author: ${this.currentQuote.author}`);
-    }
-    
-    async loadAuthorImage() {
-        try {
-            console.log(`Buscando imagen para: ${this.currentQuote.author}`);
-            
-            const params = new URLSearchParams({
-                author: this.currentQuote.author
-            });
-            
-            const response = await fetch(`/api/get-image?${params}`);
-            const data = await response.json();
-            
-            console.log('Respuesta de imagen:', data);
-            
-            if (data.success && data.image_url) {
-                console.log(`URL de imagen encontrada: ${data.image_url}`);
-                await this.tryLoadImage(data.image_url);
-            } else {
-                console.log('No se encontró imagen, generando fallback');
-                this.generateFallbackImage();
-            }
-        } catch (error) {
-            console.error('Error al cargar imagen:', error);
-            this.generateFallbackImage();
+
+    handleOptionClick(event) {
+        const symptom = $(event.target).val() || $(event.target).text();
+        if (symptom) {
+            this.addSymptom(symptom);
         }
     }
-    
-    async tryLoadImage(imageUrl) {
-        return new Promise((resolve) => {
-            const img = new Image();
+
+    addSymptom(symptom) {
+        if (!symptom || symptom.trim() === '') {
+            console.warn('Attempted to add empty symptom');
+            return;
+        }
+        
+        if (this.selectedSymptoms.has(symptom)) {
+            this.showNotification('Symptom already selected', 'info');
+            return;
+        }
+        
+        if (this.selectedSymptoms.size >= this.maxSymptoms) {
+            this.showNotification(`Maximum ${this.maxSymptoms} symptoms allowed`, 'warning');
+            return;
+        }
+        
+        console.log('Adding symptom:', symptom);
+        this.selectedSymptoms.add(symptom);
+        this.updateSelectedSymptomsList();
+        this.updateProgressIndicator();
+        this.populateSymptomDropdown(this.getFilteredSymptoms());
+        this.clearSearch();
+        
+        // Provide haptic feedback if supported
+        this.triggerHapticFeedback();
+        
+        // Show success animation
+        this.showNotification('Symptom added successfully', 'success');
+    }
+
+    handleSymptomRemoval(event) {
+        const symptom = $(event.target).data('symptom');
+        
+        if (this.selectedSymptoms.has(symptom)) {
+            this.selectedSymptoms.delete(symptom);
             
-            img.onload = () => {
-                this.authorImage.src = imageUrl;
-                this.authorImage.style.display = 'block';
-                this.imagePlaceholder.style.display = 'none';
-                resolve(true);
-            };
+            // Add removal animation
+            $(event.target).closest('li').addClass('removing');
             
-            img.onerror = () => {
-                console.log('Imagen falló, intentando con imagen alternativa...');
-                this.generateFallbackImage();
-                resolve(false);
-            };
-            
-            // Timeout más corto para mejor UX
             setTimeout(() => {
-                if (this.authorImage.style.display === 'none') {
-                    console.log('Timeout de imagen, generando alternativa...');
-                    img.src = ''; // Cancelar carga
-                    this.generateFallbackImage();
-                    resolve(false);
-                }
-            }, 8000);
+                this.updateSelectedSymptomsList();
+                this.updateProgressIndicator();
+                this.populateSymptomDropdown(this.getFilteredSymptoms());
+                this.triggerHapticFeedback();
+            }, 300);
+        }
+    }
+
+    updateSelectedSymptomsList() {
+        const $list = $('#selected_symptoms_list');
+        const $emptyState = $('#empty_symptoms');
+        
+        $list.empty();
+        
+        if (this.selectedSymptoms.size === 0) {
+            $emptyState.show();
+            return;
+        }
+        
+        $emptyState.hide();
+        
+        Array.from(this.selectedSymptoms).forEach((symptom, index) => {
+            const $item = $('<li>')
+                .addClass('symptom-item')
+                .css('animation-delay', `${index * 50}ms`)
+                .html(`
+                    <span class="symptom-name">${symptom}</span>
+                    <button type="button" class="remove-btn" data-symptom="${symptom}" title="Remove ${symptom}">
+                        <i class="fas fa-times"></i>
+                        <span class="sr-only">Remove</span>
+                    </button>
+                `);
             
-            img.src = imageUrl;
+            $list.append($item);
+        });
+        
+        // Update counter badge
+        $('.symptom-counter-badge').text(this.selectedSymptoms.size);
+    }
+
+    updateProgressIndicator() {
+        const progress = (this.selectedSymptoms.size / this.maxSymptoms) * 100;
+        
+        $('#symptom_progress').css('width', `${progress}%`);
+        $('.progress-text').text(`${this.selectedSymptoms.size}/${this.maxSymptoms} symptoms`);
+        
+        // Update analyze button state
+        const $analyzeBtn = $('#analyze_btn');
+        if (this.selectedSymptoms.size > 0) {
+            $analyzeBtn.removeClass('disabled').prop('disabled', false);
+        } else {
+            $analyzeBtn.addClass('disabled').prop('disabled', true);
+        }
+    }
+
+    getFilteredSymptoms() {
+        return this.allSymptoms.filter(symptom => !this.selectedSymptoms.has(symptom));
+    }
+
+    async handleFormSubmit(event) {
+        event.preventDefault();
+        
+        if (this.selectedSymptoms.size === 0) {
+            this.showNotification('Please select at least one symptom', 'warning');
+            return;
+        }
+        
+        if (this.isLoading) return;
+        
+        this.isLoading = true;
+        this.showLoadingOverlay(true);
+        this.setAnalyzeButtonLoading(true);
+        
+        try {
+            // Create hidden form inputs for each selected symptom
+            const form = event.target;
+            
+            console.log('Selected symptoms for submission:', Array.from(this.selectedSymptoms));
+            
+            // Remove any existing symptom inputs
+            form.querySelectorAll('input[name="symptoms"]').forEach(input => input.remove());
+            
+            // Add hidden inputs for each selected symptom
+            this.selectedSymptoms.forEach(symptom => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'symptoms';
+                hiddenInput.value = symptom;
+                form.appendChild(hiddenInput);
+                console.log('Added symptom input:', symptom);
+            });
+            
+            // Submit the form normally (not with fetch)
+            form.submit();
+            
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            this.showNotification('Analysis failed. Please try again.', 'error');
+            this.showLoadingOverlay(false);
+            this.setAnalyzeButtonLoading(false);
+            this.isLoading = false;
+        }
+    }
+
+    setupFormValidation() {
+        // Real-time validation feedback
+        const $form = $('.analysis-form');
+        const $analyzeBtn = $('#analyze_btn');
+        
+        // Initially disable the button
+        $analyzeBtn.addClass('disabled').prop('disabled', true);
+        
+        // Add validation state indicators
+        $form.addClass('needs-validation');
+    }
+
+    initializeAnimations() {
+        // Intersection Observer for scroll animations
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+            
+            // Observe elements for animation
+            document.querySelectorAll('.form-card, .notice-card, .result-card').forEach(el => {
+                observer.observe(el);
+            });
+        }
+        
+        // Add staggered animations to existing elements
+        $('.form-card').each((index, element) => {
+            $(element).css('animation-delay', `${index * 100}ms`);
+        });
+    }
+
+    showLoadingOverlay(show) {
+        const $overlay = $('#loading_overlay');
+        
+        if (show) {
+            $overlay.addClass('show');
+            $('body').addClass('loading');
+        } else {
+            $overlay.removeClass('show');
+            $('body').removeClass('loading');
+        }
+    }
+
+    setAnalyzeButtonLoading(loading) {
+        const $button = $('#analyze_btn');
+        
+        if (loading) {
+            $button.addClass('loading').prop('disabled', true);
+        } else {
+            $button.removeClass('loading').prop('disabled', false);
+        }
+    }
+
+    showSearchLoading(show) {
+        const $searchIcon = $('.search-icon i');
+        
+        if (show) {
+            $searchIcon.removeClass('fa-search').addClass('fa-spinner fa-spin');
+        } else {
+            $searchIcon.removeClass('fa-spinner fa-spin').addClass('fa-search');
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        // Create and show notification
+        const $notification = $(`
+            <div class="notification notification-${type}">
+                <div class="notification-content">
+                    <i class="fas ${this.getNotificationIcon(type)}"></i>
+                    <span>${message}</span>
+                </div>
+                <button class="notification-close" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `);
+        
+        $('body').append($notification);
+        
+        // Show with animation
+        setTimeout(() => $notification.addClass('show'), 100);
+        
+        // Auto-hide after delay
+        const hideTimeout = setTimeout(() => {
+            this.hideNotification($notification);
+        }, type === 'error' ? 6000 : 4000);
+        
+        // Manual close
+        $notification.find('.notification-close').on('click', () => {
+            clearTimeout(hideTimeout);
+            this.hideNotification($notification);
+        });
+    }
+
+    hideNotification($notification) {
+        $notification.removeClass('show');
+        setTimeout(() => $notification.remove(), 300);
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+        return icons[type] || icons.info;
+    }
+
+    handleSearchKeydown(event) {
+        const $dropdown = $('#symptom_dropdown');
+        const $options = $dropdown.find('option');
+        
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            if ($options.length > 0) {
+                $dropdown.focus();
+                $options.first().prop('selected', true);
+            }
+        }
+    }
+
+    selectFirstSymptom() {
+        const $firstOption = $('#symptom_dropdown option:first');
+        if ($firstOption.length > 0) {
+            const symptom = $firstOption.val();
+            this.addSymptom(symptom);
+        }
+    }
+
+    clearSearch() {
+        $('#symptom_search').val('');
+    }
+
+    updateDropdownState() {
+        const $dropdown = $('#symptom_dropdown');
+        const hasOptions = $dropdown.find('option').length > 0;
+        
+        $dropdown.toggleClass('has-options', hasOptions);
+    }
+
+    handleNavButtonClick(event) {
+        const $button = $(event.currentTarget);
+        
+        // Add click animation
+        $button.addClass('clicked');
+        setTimeout(() => $button.removeClass('clicked'), 200);
+        
+        // Handle specific nav actions
+        const tooltip = $button.data('tooltip');
+        if (tooltip === 'Settings') {
+            this.showNotification('Settings feature coming soon!', 'info');
+        } else if (tooltip === 'Help') {
+            this.showHelpModal();
+        }
+    }
+
+    showHelpModal() {
+        const helpContent = `
+            <div class="help-modal">
+                <div class="help-header">
+                    <h3>How to Use MedInsight</h3>
+                </div>
+                <div class="help-content">
+                    <div class="help-step">
+                        <i class="fas fa-search"></i>
+                        <div>
+                            <h4>Search Symptoms</h4>
+                            <p>Type in the search box to find symptoms you're experiencing</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <i class="fas fa-plus"></i>
+                        <div>
+                            <h4>Select Symptoms</h4>
+                            <p>Click on symptoms from the dropdown to add them to your list</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <i class="fas fa-brain"></i>
+                        <div>
+                            <h4>Get Analysis</h4>
+                            <p>Click "Analyze Symptoms" to get AI-powered health insights</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-disclaimer">
+                    <p><strong>Remember:</strong> This tool provides preliminary information only. Always consult healthcare professionals for medical advice.</p>
+                </div>
+            </div>
+        `;
+        
+        this.showNotification(helpContent, 'info');
+    }
+
+    triggerHapticFeedback() {
+        // Trigger haptic feedback on supported devices
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+    }
+
+    // Utility function for debouncing
+    debounce(func, wait, immediate) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                timeout = null;
+                if (!immediate) func.apply(this, args);
+            };
+            const callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(this, args);
+        };
+    }
+}
+
+// Initialize application when DOM is ready
+$(document).ready(() => {
+    window.medInsight = new MedInsight();
+    
+    // Add global error handling
+    window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        if (window.medInsight) {
+            window.medInsight.showNotification('An unexpected error occurred', 'error');
+        }
+    });
+    
+    // Add performance monitoring
+    if ('performance' in window) {
+        window.addEventListener('load', () => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            console.log(`Page loaded in ${Math.round(perfData.loadEventEnd - perfData.loadEventStart)}ms`);
         });
     }
     
-    generateFallbackImage() {
-        // Generar imagen con las iniciales del autor
-        const authorName = this.currentQuote.author;
-        const initials = authorName.split(' ')
-            .map(word => word.charAt(0))
-            .join('')
-            .substring(0, 2)
-            .toUpperCase();
-        
-        const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&size=400&background=667eea&color=fff&font-size=0.33&format=png&rounded=true&length=2`;
-        
-        this.authorImage.src = fallbackUrl;
-        this.authorImage.style.display = 'block';
-        this.imagePlaceholder.style.display = 'none';
+    // Service worker registration for future PWA features
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        navigator.serviceWorker.register('/static/sw.js').catch(err => {
+            console.log('Service worker registration failed:', err);
+        });
     }
-    
+});
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = MedInsight;
 }
-
-// Inicializar la aplicación cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    new QuoteGuessingGame();
-});
-
-// Manejar errores de red globalmente
-window.addEventListener('online', function() {
-    console.log('Conexión restaurada');
-});
-
-window.addEventListener('offline', function() {
-    console.log('Sin conexión a internet');
-});
