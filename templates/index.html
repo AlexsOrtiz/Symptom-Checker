@@ -3,82 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Symptom Analyzer</title>
+    <title>MedInsight - AI Medical Symptom Analyzer</title>
+    <meta name="description" content="Advanced AI-powered medical symptom analyzer for preliminary health assessment">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-stethoscope"></i> Medical Symptom Analyzer</h1>
-            <p class="subtitle">Enter your symptoms to get a preliminary diagnosis</p>
-        </header>
-
-        <div class="medical-info">
-            <h3><i class="fas fa-info-circle"></i> Important Information</h3>
-            <p>This tool is designed to provide preliminary information only. Always consult with a healthcare professional for accurate diagnosis and treatment.</p>
-        </div>
-
-        <form method="POST" class="symptom-form">
-            <div class="form-group">
-                <label for="symptom_search"><i class="fas fa-search"></i> Search Symptoms</label>
-                <input type="text" id="symptom_search" placeholder="Type to search symptoms...">
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <span class="brand-text">MedInsight</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="nav-btn" data-tooltip="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="nav-btn" data-tooltip="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
             </div>
+        </nav>
 
-            <div class="form-group">
-                <label for="symptom_dropdown"><i class="fas fa-list"></i> Available Symptoms</label>
-                <select id="symptom_dropdown" name="symptoms" multiple>
-                    <!-- Options will be populated here -->
-                </select>
-            </div>
+        <main class="main-content">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>AI-Powered Medical Analysis</span>
+                    </div>
+                    <h1 class="hero-title">Advanced Symptom Analysis</h1>
+                    <p class="hero-subtitle">Get preliminary health insights using advanced machine learning algorithms. Enter your symptoms for intelligent health assessment.</p>
+                </div>
+                <div class="hero-visual">
+                    <div class="medical-animation">
+                        <div class="pulse-ring"></div>
+                        <div class="medical-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-            <div class="selected-symptoms-section">
-                <h3><i class="fas fa-check-circle"></i> Selected Symptoms <span class="symptom-counter">0/10</span></h3>
-                <ul id="selected_symptoms_list">
-                    <!-- Selected symptoms will appear here -->
-                </ul>
-            </div>
+            <!-- Important Notice -->
+            <section class="notice-section">
+                <div class="notice-card">
+                    <div class="notice-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="notice-content">
+                        <h3>Medical Disclaimer</h3>
+                        <p>This AI tool provides preliminary analysis only. Always consult qualified healthcare professionals for accurate diagnosis, treatment, and medical advice. Do not use for emergency situations.</p>
+                    </div>
+                </div>
+            </section>
 
-            <button type="submit" class="analyze-btn">
-                <i class="fas fa-microscope"></i> Analyze Symptoms
-            </button>
-        </form>
+            <!-- Symptom Analysis Form -->
+            <section class="analysis-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-microscope"></i>
+                        Symptom Analysis
+                    </h2>
+                    <p class="section-subtitle">Select your symptoms for AI-powered health assessment</p>
+                </div>
 
-        <div class="loading">
-            <div class="loading-spinner"></div>
-            <p>Analyzing symptoms...</p>
-        </div>
+                <form method="POST" class="analysis-form">
+                    <div class="form-grid">
+                        <!-- Search Section -->
+                        <div class="form-card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-search"></i>
+                                    Find Symptoms
+                                </h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="search-input-group">
+                                    <input type="text" id="symptom_search" class="search-input" 
+                                           placeholder="Type symptoms like 'fever', 'headache', 'nausea'..." 
+                                           autocomplete="off">
+                                    <div class="search-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-        {% if disease %}
-            <div class="result-section fade-in">
-                <h2><i class="fas fa-clipboard-check"></i> Analysis Results</h2>
-                <div class="result-card">
-                    <h3>Predicted Condition</h3>
-                    <p class="disease-name">{{ disease['final_prediction'] }}</p>
-                    
-                    <div class="model-predictions">
-                        <h4>Model Predictions</h4>
-                        <ul>
-                            <li><strong>Random Forest:</strong> {{ disease['rf_model_prediction'] }}</li>
-                            <li><strong>Naive Bayes:</strong> {{ disease['naive_bayes_prediction'] }}</li>
-                            <li><strong>SVM:</strong> {{ disease['svm_model_prediction'] }}</li>
-                        </ul>
+                        <!-- Available Symptoms -->
+                        <div class="form-card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-list-ul"></i>
+                                    Available Symptoms
+                                </h3>
+                                <small class="selection-hint">Double-click to select</small>
+                            </div>
+                            <div class="card-content">
+                                <div class="symptom-dropdown-wrapper">
+                                    <select id="symptom_dropdown" class="symptom-select" size="8">
+                                        <!-- Options populated by JavaScript -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Symptoms -->
+                    <div class="form-card selected-symptoms-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-check-circle"></i>
+                                Selected Symptoms
+                                <span class="symptom-counter-badge">0</span>
+                            </h3>
+                            <div class="progress-indicator">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="symptom_progress"></div>
+                                </div>
+                                <span class="progress-text">0/10 symptoms</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="selected-symptoms-container">
+                                <ul id="selected_symptoms_list" class="symptoms-grid">
+                                    <!-- Selected symptoms appear here -->
+                                </ul>
+                                <div class="empty-state" id="empty_symptoms">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <p>Select symptoms from the list above to begin analysis</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="analyze-button" id="analyze_btn">
+                            <span class="btn-icon">
+                                <i class="fas fa-brain"></i>
+                            </span>
+                            <span class="btn-text">Analyze Symptoms</span>
+                            <div class="btn-loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Loading State -->
+            <div class="loading-overlay" id="loading_overlay">
+                <div class="loading-content">
+                    <div class="medical-loader">
+                        <div class="loader-pulse"></div>
+                        <div class="loader-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                    </div>
+                    <h3>Analyzing Symptoms</h3>
+                    <p>Our AI models are processing your symptoms...</p>
+                    <div class="progress-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </div>
                 </div>
             </div>
-        {% endif %}
-    </div>
 
-    <footer>
-        <div class="footer-content">
-            <p>This is a preliminary diagnostic tool. Always consult with healthcare professionals.</p>
-            <a href="https://www.canva.com/design/DAGiL5shOM4/JrNJue7PZK8X2B2ZfsKf_Q/view?utm_content=DAGiL5shOM4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h6bc129e773" target="_blank" class="info-btn">
-                <i class="fas fa-book-medical"></i> Learn More About This Tool
-            </a>
-        </div>
-    </footer>
+            <!-- Results Section -->
+            {% if disease %}
+            <section class="results-section fade-in-up">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-clipboard-check"></i>
+                        Analysis Results
+                    </h2>
+                    <div class="confidence-badge">
+                        <i class="fas fa-chart-line"></i>
+                        <span>AI Analysis Complete</span>
+                    </div>
+                </div>
+
+                <div class="results-grid">
+                    <!-- Primary Prediction -->
+                    <div class="result-card primary-result">
+                        <div class="card-header">
+                            <h3 class="card-title">Primary Prediction</h3>
+                            <div class="result-status">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="prediction-display">
+                                <h4 class="condition-name">{{ disease['final_prediction'] }}</h4>
+                                <p class="prediction-note">Based on consensus of multiple AI models</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Breakdown -->
+                    <div class="result-card models-result">
+                        <div class="card-header">
+                            <h3 class="card-title">Model Analysis</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="models-grid">
+                                <div class="model-item">
+                                    <div class="model-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div class="model-info">
+                                        <span class="model-name">Random Forest</span>
+                                        <span class="model-prediction">{{ disease['rf_model_prediction'] }}</span>
+                                    </div>
+                                </div>
+                                <div class="model-item">
+                                    <div class="model-icon">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <div class="model-info">
+                                        <span class="model-name">Naive Bayes</span>
+                                        <span class="model-prediction">{{ disease['naive_bayes_prediction'] }}</span>
+                                    </div>
+                                </div>
+                                <div class="model-item">
+                                    <div class="model-icon">
+                                        <i class="fas fa-vector-square"></i>
+                                    </div>
+                                    <div class="model-info">
+                                        <span class="model-name">Support Vector</span>
+                                        <span class="model-prediction">{{ disease['svm_model_prediction'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="result-card next-steps">
+                        <div class="card-header">
+                            <h3 class="card-title">Recommended Actions</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="recommendations">
+                                <div class="recommendation-item">
+                                    <i class="fas fa-user-doctor"></i>
+                                    <span>Consult with a healthcare professional</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-notes-medical"></i>
+                                    <span>Keep track of symptom changes</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-phone-medical"></i>
+                                    <span>Contact emergency services if symptoms worsen</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>MedInsight</span>
+                    </div>
+                    <p class="footer-description">AI-powered medical symptom analysis for preliminary health assessment.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Important Links</h4>
+                    <div class="footer-links">
+                        <a href="https://www.canva.com/design/DAGiL5shOM4/JrNJue7PZK8X2B2ZfsKf_Q/view?utm_content=DAGiL5shOM4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h6bc129e773" 
+                           target="_blank" rel="noopener" class="footer-link">
+                            <i class="fas fa-external-link-alt"></i>
+                            Learn More About This Tool
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-disclaimer">
+                    <p><strong>Medical Disclaimer:</strong> This tool is for informational purposes only and should not replace professional medical advice, diagnosis, or treatment.</p>
+                    <p>Developed by Alexsandra Ortiz</p>
+                </div>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>
