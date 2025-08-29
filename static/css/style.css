@@ -1,152 +1,653 @@
-/* General Styles */
-body {
-    font-family: 'Arial', sans-serif;
+/* Reset y configuración base */
+* {
     margin: 0;
     padding: 0;
-    background-color: #f0f4f8;  /* Suave gris azulado para dar un aire médico y profesional */
-    color: #333;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
     line-height: 1.6;
-}
-
-/* Container */
-.container {
-    width: 70%;
-    margin: 50px auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Header */
-h1 {
-    font-size: 2.5rem;
-    text-align: center;
-    color: #007bff;  /* Azul profesional para resaltar el encabezado */
-    margin-bottom: 20px;
-}
-
-/* Form Fields */
-select, input[type="text"], button {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #007bff;  /* Azul para resaltar los campos de entrada */
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-/* Input Field for Search */
-input[type="text"] {
-    padding-left: 10px;
-    border: 2px solid #007bff;
-    max-width: 200px;  
-    text-align: center;
-}
-
-/* Symptom Dropdown */
-select {
-    height: 200px;
-    background-color: #f9f9f9;
-    border: 2px solid #007bff;
-}
-
-/* Button Styles */
-button {
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    padding: 15px;
-    border: none;
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 20px;
-}
-
-button:hover {
-    background-color: #0056b3;
-    transform: translateY(-3px);
-}
-
-/* Title and Error Message */
-h2 {
-    font-size: 1.8rem;
-    color: #007bff;
-    text-align: center;
-    margin-top: 30px;
-}
-
-/* Error Message */
-.error {
-    color: red;
-    font-size: 1.2rem;
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* Symptoms List */
-#selected_symptoms_list {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 10px;
-}
-
-/* Estilo de la lista de síntomas seleccionados */
-#selected_symptoms_list li {
-    background-color: #f1f1f1;
-    padding: 8px;
-    margin: 5px 0;
-    border-radius: 5px;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 10px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 500;
+    flex-direction: column;
 }
 
-/* Botón de remover más estrecho */
-.remove-btn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    padding: 4px 8px; /* Haciendo el botón más estrecho */
-    cursor: pointer;
-    font-size: 14px;
-    align-self: center;
-    display: inline-block;
-    width: auto;  /* Aseguramos que el botón no se expanda más de lo necesario */
-    max-width: 100px;  /* Limitar el ancho máximo del botón */
-    text-align: center; /* Alineamos el texto del botón */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Estilo del hover del botón */
-.remove-btn:hover {
-    background-color: #c0392b;  /* Efecto hover */
-}
-
-/* Estilo de hover para el elemento de la lista */
-#selected_symptoms_list li:hover {
-    background-color: #e2e6ea;
-    transition: background-color 0.3s ease;
-}
-
-/* Animation Effects */
-@keyframes fadeIn {
+@keyframes fadeInUp {
     from {
         opacity: 0;
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
-.fade-in {
-    animation: fadeIn 1s ease-in-out;
+/* Header */
+.header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
 }
 
-/* Smooth Scroll for Form */
-html {
-    scroll-behavior: smooth;
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.header .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Controles del juego */
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    flex: 1;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 15px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+    min-width: 160px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(76, 175, 80, 0.4);
+}
+
+.btn-primary:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+}
+
+.btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(33, 150, 243, 0.4);
+}
+
+.btn-secondary:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.btn-accent {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+    min-width: auto;
+    padding: 12px 16px;
+}
+
+.btn-accent:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    filter: grayscale(50%);
+}
+
+/* Barra de estado */
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+    background: #e3f2fd;
+    border-top: 1px solid #bbdefb;
+}
+
+#statusText {
+    font-weight: 500;
+    color: #1565c0;
+}
+
+.loading-spinner {
+    display: none;
+    color: #1565c0;
+    font-size: 1.2rem;
+}
+
+.loading-spinner.show {
+    display: block;
+}
+
+/* Área del juego */
+.game-area {
+    padding: 30px 20px;
+}
+
+.quote-container {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border-left: 5px solid #667eea;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.quote-text {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    font-style: italic;
+    color: #2c3e50;
+    text-align: center;
+    position: relative;
+}
+
+.quote-text::before {
+    content: '"';
+    font-size: 3rem;
+    color: #667eea;
+    position: absolute;
+    top: -10px;
+    left: -20px;
+    opacity: 0.3;
+}
+
+.quote-text::after {
+    content: '"';
+    font-size: 3rem;
+    color: #667eea;
+    position: absolute;
+    bottom: -40px;
+    right: -20px;
+    opacity: 0.3;
+}
+
+/* Información del juego */
+.game-info {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.guesses-remaining {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+}
+
+.guesses-remaining.warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.guesses-remaining.danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Contenedor de entrada */
+.input-container {
+    margin-bottom: 30px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+#guessInput {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+#guessInput:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Contenedor de pistas */
+.hints-container {
+    background: #fff8e1;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #ffecb3;
+    margin-bottom: 30px;
+}
+
+.hints-container h3 {
+    color: #f57f17;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#hintsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hint-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Contenedor de resultados */
+.result-container {
+    padding: 40px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.result-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.result-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.result-text.success {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.result-text.failure {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.author-info {
+    margin-bottom: 30px;
+}
+
+#authorName {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.author-image-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+#authorImage {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border: 5px solid white;
+}
+
+.image-placeholder {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e9ecef, #dee2e6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border: 5px solid white;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.image-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    position: relative;
+}
+
+.modal-body {
+    padding: 30px;
+    text-align: center;
+}
+
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+.close:hover {
+    opacity: 0.7;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 25px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    font-size: 1rem;
+    margin-top: auto;
+    border-radius: 0 0 20px 20px;
+}
+
+.footer p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.footer i {
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        border-radius: 10px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .header .subtitle {
+        font-size: 1rem;
+    }
+    
+    .game-controls {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .quote-container {
+        padding: 20px;
+    }
+    
+    .quote-text {
+        font-size: 1.1rem;
+    }
+    
+    .quote-text::before,
+    .quote-text::after {
+        font-size: 2rem;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        max-width: 100%;
+    }
+    
+    #guessInput {
+        margin-bottom: 10px;
+    }
+    
+    .hints-container {
+        padding: 20px;
+    }
+    
+    #authorImage,
+    .image-placeholder {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .image-placeholder i {
+        font-size: 2rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 20px 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .game-area,
+    .result-container {
+        padding: 20px 15px;
+    }
+    
+    .quote-container {
+        padding: 15px;
+    }
+    
+    .quote-text {
+        font-size: 1rem;
+    }
+    
+    .hints-container {
+        padding: 15px;
+    }
+    
+    .hint-item {
+        padding: 12px;
+    }
+    
+    #authorImage,
+    .image-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .image-placeholder i {
+        font-size: 1.5rem;
+    }
+    
+    #authorName {
+        font-size: 1.5rem;
+    }
+    
+    .result-text {
+        font-size: 1.2rem;
+        padding: 15px;
+    }
+}
+
+/* Animaciones adicionales */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
